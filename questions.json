@@ -1,0 +1,92 @@
+[
+  {
+    "q": "Nadir ilk dəfə maşın sürməyi hansı markalı maşında öyrənib?",
+    "options": [
+      "LADA (VAZ) 2110",
+      "LADA (VAZ) 2112",
+      "LADA (VAZ) 2107"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Nadirin ilk maaşının nömrəsi nə olub?",
+    "options": [
+      "90-NM-371",
+      "99-NM-371",
+      "10-NM-371"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Nadir qəbul imtahanında hansı səhvləri etmişdi?",
+    "options": [
+      "1 səhv Azərbaycan dili, 1 səhv İngilis dili",
+      "1 səhv Azərbaycan dili, 1 səhv Ədəbiyyat",
+      "2 səhv Ədəbiyyat, 1 səhv İngilis dili"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Nadir orta məktəbi bitirdiyi zaman geyindiyi məzun paltarının (mantiyanın) rəngi nə idi?",
+    "options": [
+      "Açıq mavi-sarı",
+      "Çəhrayı-qızılı",
+      "Tünd göy-ağ"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Nadirin şəxsiyyət vəsiqəsində doğum yeri haradır?",
+    "options": [
+      "Ağcabədi",
+      "Bakı",
+      "Bərdə"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Nadir sürücülük vəsiqəsini haradan alıb?",
+    "options": [
+      "Sumqayıt",
+      "Ağcabədi",
+      "Bakı"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Nadir əsgərlikdə olanda hansı binanın söküntü işlərində iştirak edib?",
+    "options": [
+      "Yeməkxana",
+      "Donuz tövləsi",
+      "Binanın təyinatı məlum olmayıb"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Nadirin ilk rəsmi iş yeri harа olub?",
+    "options": [
+      "Avromed QSC",
+      "Vita Aptekləri MMC",
+      "Turan Legal and Tax Services MMC"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "ELSA vaxtı tədbirdə Nadir hansı durumda sinxron tərcümə etmişdi?",
+    "options": [
+      "Milli Məclis",
+      "Ali Məhkəmə",
+      "ASAN Xidmət"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "BONUS SUAL (əlaqəsiz, KV sevənlər üçün): Süleyman Çakırın anasının adı nə idi?",
+    "options": [
+      "Emine",
+      "Esma",
+      "Nermin"
+    ],
+    "correct": 0
+  }
+]

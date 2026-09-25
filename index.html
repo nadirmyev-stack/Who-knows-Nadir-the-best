@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="az">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nadir Mehdiyev — Birthday Quiz</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="grain"></div>
+<main id="app">
+  <section id="join" class="screen active">
+    <div class="poster">
+      <div class="poster-copy">
+        <div class="eyebrow">NADİR MEHDİYEV • BIRTHDAY QUIZ</div>
+        <h1>Məni nə qədər<br><span>yaxşı tanıyırsan?</span></h1>
+        <p>10 sual · hər sual 15 saniyə · bir cavab haqqı</p>
+        <form id="joinForm">
+          <input id="name" maxlength="40" autocomplete="off" placeholder="Adını yaz" required>
+          <button>QUIZƏ DAXİL OL →</button>
+        </form>
+        <div class="fine">Cavab seçildikdən sonra dəyişdirilə bilməz.</div>
+      </div>
+      <div class="portrait-wrap">
+        <img class="portrait-image" src="/assets/nadir-soviet.png" alt="Nadir — retro Soviet-style portrait">
+        <div class="portrait-overlay"></div>
+        <div class="stamp">30</div>
+        <div class="portrait-caption">
+          <div class="portrait-title">NADİR<br>MEHDİYEV</div>
+          <div class="portrait-sub">SOVIET EDITION • BIRTHDAY ARCHIVE</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="quiz" class="screen">
+    <header class="topbar">
+      <div class="brand">NADİR <b>QUIZ</b></div>
+      <div id="progress">1 / 10</div>
+      <div class="timer" id="timer">15</div>
+    </header>
+    <div class="quiz-card">
+      <div class="question-number" id="qnum">SUAL 01</div>
+      <h2 id="question"></h2>
+      <div id="options" class="options"></div>
+      <div id="feedback" class="feedback"></div>
+    </div>
+  </section>
+
+  <section id="final" class="screen">
+    <div class="final-card">
+      <div class="eyebrow">QUIZ TAMAMLANDI</div>
+      <h1>Kim məni<br><span>ən yaxşı tanıyır?</span></h1>
+      <div id="winner"></div>
+      <div id="board" class="board"></div>
+      <button id="again">YENİ OYUN</button>
+    </div>
+  </section>
+</main>
+<script src="/app.js"></script>
+</body></html>

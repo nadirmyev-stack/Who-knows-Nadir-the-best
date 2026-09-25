@@ -1,0 +1,7 @@
+{
+  "name": "nadir-birthday-quiz",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {"start": "node server.js"},
+  "dependencies": {"ws": "^8.18.3", "qrcode": "^1.5.4"}
+}
