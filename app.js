@@ -1,110 +1,132 @@
-let ws = null;
-let me = null;
-let state = null;
+let ws, me = null, state = null;
 let answered = false;
+let myChoice = null;
 let tick = null;
 
 const $ = id => document.getElementById(id);
 
-function show(id) {
-  document.querySelectorAll('.screen').forEach(x => {
-    x.classList.remove('active');
-  });
 
-  const el = $(id);
-  if (el) el.classList.add('active');
-}
+/* =========================================================
+   WEBSOCKET
+   ========================================================= */
 
-function connectAndJoin(name) {
-  console.log('Connecting...');
+function connect(){
+  ws = new WebSocket(
+    (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host
+  );
 
-  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const url = protocol + '//' + location.host;
-
-  ws = new WebSocket(url);
-
-  ws.onopen = () => {
-    console.log('WebSocket connected');
-
-    ws.send(JSON.stringify({
-      type: 'join',
-      name: name
-    }));
-  };
+  ws.onopen = () => {};
 
   ws.onmessage = e => {
-    console.log('SERVER:', e.data);
+    const m = JSON.parse(e.data);
 
-    let m;
-
-    try {
-      m = JSON.parse(e.data);
-    } catch (err) {
-      console.error('Invalid server message:', err);
-      return;
-    }
-
-    if (m.type === 'joined') {
+    /* Player joined */
+    if(m.type === 'joined'){
       me = m.id;
       state = m.state;
-      localStorage.setItem('nadirQuizName', name);
 
-      console.log('JOINED:', me);
+      answered = false;
+      myChoice = null;
 
       showState();
-      return;
+
+      localStorage.setItem(
+        'nadirQuizName',
+        $('name').value.trim()
+      );
     }
 
-    if (m.type === 'state') {
+    /* State changed */
+    if(m.type === 'state'){
       state = m.state;
+
+      /*
+       * New question:
+       * clear previous answer
+       */
+      if(state.phase === 'question'){
+        answered = false;
+        myChoice = null;
+      }
+
       showState();
-      return;
     }
 
-    if (m.type === 'answerAccepted') {
+    /*
+     * IMPORTANT:
+     *
+     * Do NOT show correct/wrong answer here.
+     *
+     * Server sends answerAccepted immediately after
+     * the user selects an answer, but we intentionally
+     * wait until the timer finishes.
+     */
+    if(m.type === 'answerAccepted'){
       answered = true;
-      renderAnswer(m.choice, m.correct);
-      return;
+      myChoice = m.choice;
+
+      /*
+       * Do not call renderAnswer() here.
+       *
+       * The result will only be displayed when
+       * the server changes phase to "reveal".
+       */
     }
 
-    if (m.type === 'leaderboard') {
-      if (state) {
+    if(m.type === 'leaderboard'){
+      if(state){
         state.leaderboard = m.leaderboard;
       }
     }
   };
 
-  ws.onerror = error => {
-    console.error('WebSocket ERROR:', error);
-    alert('Serverə qoşulmaq mümkün olmadı. Bir neçə saniyə sonra yenidən yoxla.');
-  };
-
   ws.onclose = () => {
-    console.log('WebSocket closed');
+    /*
+     * Nothing special here.
+     * The page can reconnect when necessary.
+     */
   };
 }
 
-function showState() {
-  if (!state) return;
 
-  console.log('STATE:', state.phase);
+/* =========================================================
+   SEND
+   ========================================================= */
 
-  if (state.phase === 'lobby') {
-    show('quiz');
+function send(o){
+  if(ws?.readyState === 1){
+    ws.send(JSON.stringify(o));
+  }
+}
 
-    $('progress').textContent = '';
-    $('qnum').textContent = 'HAZIRSAN?';
-    $('question').textContent =
-      'Aparıcının oyunu başlatması gözlənilir...';
 
-    $('options').innerHTML = '';
-    $('feedback').textContent = '';
-    $('timer').textContent = '15';
+/* =========================================================
+   SCREEN
+   ========================================================= */
 
+function show(id){
+  document
+    .querySelectorAll('.screen')
+    .forEach(x => x.classList.remove('active'));
+
+  $(id).classList.add('active');
+}
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+function showState(){
+
+  if(!state) return;
+
+  if(state.phase === 'lobby'){
+    show('join');
     return;
   }
 
-  if (state.phase === 'final') {
+  if(state.phase === 'final'){
     show('final');
     renderFinal();
     return;
@@ -114,14 +136,18 @@ function showState() {
   renderQuestion();
 }
 
-function renderQuestion() {
-  if (!state || !state.question) return;
+
+/* =========================================================
+   QUESTION
+   ========================================================= */
+
+function renderQuestion(){
 
   $('progress').textContent =
     `${state.qIndex + 1} / ${state.total}`;
 
   $('qnum').textContent =
-    `SUAL ${String(state.qIndex + 1).padStart(2, '0')}`;
+    `SUAL ${String(state.qIndex + 1).padStart(2,'0')}`;
 
   $('question').textContent =
     state.question.text;
@@ -131,166 +157,267 @@ function renderQuestion() {
 
   $('options').innerHTML = '';
 
-  answered = state.phase !== 'question';
+
+  /*
+   * If we are already in reveal/final phase,
+   * answers cannot be changed.
+   */
+  const isQuestion = state.phase === 'question';
+
+  if(!isQuestion){
+    answered = true;
+  }
+
+
+  /* =======================================================
+     CREATE ANSWER BUTTONS
+     ======================================================= */
 
   state.question.options.forEach((opt, i) => {
+
     const b = document.createElement('button');
 
     b.className = 'option';
+
     b.textContent = opt;
 
-    b.disabled = state.phase !== 'question';
+    b.disabled = !isQuestion || answered;
+
 
     b.onclick = () => {
-      if (answered) return;
+
+      if(answered) return;
 
       answered = true;
+      myChoice = i;
 
+      /*
+       * Disable all answers immediately.
+       *
+       * BUT:
+       * do not use red/green here.
+       */
       [...$('options').children].forEach(x => {
         x.disabled = true;
       });
 
+
+      /*
+       * Neutral selection.
+       *
+       * This only shows that the user selected
+       * something. It does NOT indicate correct/wrong.
+       */
       b.classList.add('selected');
 
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'answer',
-          choice: i
-        }));
-      }
+      send({
+        type:'answer',
+        choice:i
+      });
     };
+
 
     $('options').appendChild(b);
   });
 
-  clearInterval(tick);
 
-  if (state.phase === 'question' && state.questionStartedAt) {
-    const start = state.questionStartedAt;
+  /* =======================================================
+     REVEAL
+     ======================================================= */
 
-    function timer() {
-      const left = Math.max(
-        0,
-        15 - (Date.now() - start) / 1000
-      );
+  if(state.phase === 'reveal'){
 
-      $('timer').textContent = Math.ceil(left);
+    const correctIndex = state.revealCorrect;
 
-      if (left <= 0) {
-        clearInterval(tick);
-      }
-    }
+    [...$('options').children].forEach((b,i) => {
 
-    timer();
-    tick = setInterval(timer, 100);
-  } else {
-    $('timer').textContent = '0';
-  }
-
-  if (state.phase === 'reveal') {
-    [...$('options').children].forEach((b, i) => {
-      if (i === state.revealCorrect) {
+      /*
+       * Correct answer becomes green.
+       */
+      if(i === correctIndex){
         b.classList.add('correct');
       }
+
+      /*
+       * If the player selected a wrong answer,
+       * show that answer in red ONLY NOW.
+       */
+      if(
+        myChoice !== null &&
+        i === myChoice &&
+        i !== correctIndex
+      ){
+        b.classList.remove('selected');
+        b.classList.add('wrong');
+      }
+
     });
 
-    $('feedback').textContent =
-      'Düzgün cavab yuxarıda göstərilib.';
 
-    $('feedback').className =
-      'feedback correct';
+    /*
+     * Result message appears ONLY after timer ends.
+     */
+    if(
+      myChoice !== null &&
+      myChoice === correctIndex
+    ){
+      $('feedback').textContent = 'Düzgün cavab!';
+      $('feedback').className = 'feedback correct';
+
+    } else if(myChoice !== null){
+
+      $('feedback').textContent = 'Səhv cavab.';
+      $('feedback').className = 'feedback wrong';
+
+    } else {
+
+      $('feedback').textContent = 'Vaxt bitdi.';
+      $('feedback').className = 'feedback';
+    }
+  }
+
+
+  /* =======================================================
+     TIMER
+     ======================================================= */
+
+  clearInterval(tick);
+
+  const start = state.questionStartedAt;
+
+
+  function timer(){
+
+    const left = Math.max(
+      0,
+      15 - (Date.now() - start) / 1000
+    );
+
+    $('timer').textContent = Math.ceil(left);
+
+    if(left <= 0){
+      clearInterval(tick);
+    }
+  }
+
+
+  if(state.phase === 'question'){
+
+    timer();
+
+    tick = setInterval(timer, 100);
+
+  } else {
+
+    $('timer').textContent = '0';
   }
 }
 
-function renderAnswer(choice, correct) {
-  [...$('options').children].forEach((b, i) => {
-    b.disabled = true;
 
-    if (i === choice && !correct) {
-      b.classList.add('wrong');
-    }
+/* =========================================================
+   FINAL
+   ========================================================= */
 
-    if (
-      state &&
-      state.revealCorrect !== null &&
-      i === state.revealCorrect
-    ) {
-      b.classList.add('correct');
-    }
-  });
+function renderFinal(){
 
-  $('feedback').textContent =
-    correct ? 'Düzgün cavab!' : 'Səhv cavab.';
+  const rows = [
+    ...(state.leaderboard || [])
+  ];
 
-  $('feedback').className =
-    'feedback ' + (correct ? 'correct' : 'wrong');
-}
-
-function renderFinal() {
-  const rows = state.leaderboard || [];
   const top = rows[0];
+
 
   $('winner').innerHTML = top
     ? `
       <div class="winner-name">
         🏆 ${esc(top.name)}
       </div>
+
       <div class="winner-score">
-        ${top.score}/${state.total} düzgün cavab ·
+        ${top.score}/${state.total}
+        düzgün cavab ·
         ${top.totalTime}s cavab vaxtı
       </div>
     `
     : '';
 
-  $('board').innerHTML = rows.map((p, i) => `
-    <div class="row">
-      <div class="rank">#${i + 1}</div>
-      <div>${esc(p.name)}</div>
-      <div class="score">${p.score}/${state.total}</div>
-      <div class="time">${p.totalTime}s</div>
-    </div>
-  `).join('');
+
+  $('board').innerHTML =
+    rows.map((p,i) => `
+      <div class="row">
+        <div class="rank">#${i+1}</div>
+        <div>${esc(p.name)}</div>
+        <div class="score">
+          ${p.score}/${state.total}
+        </div>
+        <div class="time">
+          ${p.totalTime}s
+        </div>
+      </div>
+    `).join('');
 }
 
-function esc(s) {
-  return String(s).replace(
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
+
+function esc(s){
+  return s.replace(
     /[&<>"']/g,
     c => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
     }[c])
   );
 }
 
-/* JOIN */
-document.getElementById('joinForm').addEventListener(
-  'submit',
-  function(e) {
-    e.preventDefault();
 
-    const name = $('name').value.trim();
+/* =========================================================
+   JOIN
+   ========================================================= */
 
-    if (!name) {
-      alert('Adını yaz');
-      return;
+$('joinForm').onsubmit = e => {
+
+  e.preventDefault();
+
+  const n = $('name').value.trim();
+
+  if(!n) return;
+
+  connect();
+
+  const wait = setInterval(() => {
+
+    if(ws?.readyState === 1){
+
+      clearInterval(wait);
+
+      send({
+        type:'join',
+        name:n
+      });
     }
 
-    const button = this.querySelector('button');
+  },100);
+};
 
-    button.disabled = true;
-    button.textContent = 'QOŞULUR...';
 
-    connectAndJoin(name);
-  }
-);
+/* =========================================================
+   SAVED NAME
+   ========================================================= */
 
-/* əvvəlki adı göstər */
-$('name').value='';
+$('name').value =
+  localStorage.getItem('nadirQuizName') || '';
 
-/* yeni oyun */
+
+/* =========================================================
+   AGAIN
+   ========================================================= */
+
 $('again').onclick = () => {
   location.reload();
 };
