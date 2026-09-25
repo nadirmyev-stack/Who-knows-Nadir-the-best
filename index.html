@@ -14,10 +14,24 @@
         <div class="eyebrow">NADİR MEHDİYEV • BIRTHDAY QUIZ</div>
         <h1>Məni nə qədər<br><span>yaxşı tanıyırsan?</span></h1>
         <p>10 sual · hər sual 15 saniyə · bir cavab haqqı</p>
-        <form id="joinForm">
-          <input id="name" maxlength="40" autocomplete="off" placeholder="Adını yaz" required>
-          <button>QUIZƏ DAXİL OL →</button>
-        </form>
+        <form id="joinForm" onsubmit="joinQuiz(event)" style="display:flex !important; gap:10px !important; margin-top:24px !important; position:relative !important; z-index:9999 !important;">
+  <input
+    id="name"
+    type="text"
+    maxlength="40"
+    autocomplete="off"
+    placeholder="Adını yaz"
+    required
+    style="display:block !important; visibility:visible !important; opacity:1 !important; flex:1 !important; height:58px !important; padding:16px 18px !important; border:2px solid #141414 !important; background:white !important; color:#141414 !important; font-size:17px !important;"
+  >
+
+  <button
+    type="submit"
+    style="display:block !important; visibility:visible !important; opacity:1 !important; height:58px !important; padding:16px 22px !important; background:#b12b25 !important; color:white !important; border:0 !important; font-weight:700 !important; cursor:pointer !important;"
+  >
+    QUIZƏ DAXİL OL →
+  </button>
+</form>
         <div class="fine">Cavab seçildikdən sonra dəyişdirilə bilməz.</div>
       </div>
       <div class="portrait-wrap">
@@ -56,5 +70,5 @@
     </div>
   </section>
 </main>
-<script src="/app.js"></script>
+<script src="/app.js?v=5"></script>
 </body></html>
