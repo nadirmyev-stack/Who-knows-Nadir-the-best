@@ -66,6 +66,62 @@ function renderFinal(){
   $('board').innerHTML=rows.map((p,i)=>`<div class="row"><div class="rank">#${i+1}</div><div>${esc(p.name)}</div><div class="score">${p.score}/${state.total}</div><div class="time">${p.totalTime}s</div></div>`).join('');
 }
 function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-$('joinForm').onsubmit=e=>{e.preventDefault();const n=$('name').value.trim();if(!n)return;connect();const wait=setInterval(()=>{if(ws?.readyState===1){clearInterval(wait);send({type:'join',name:n});}},100)};
-$('name').value=localStorage.getItem('nadirQuizName')||'';
-$('again').onclick=()=>location.reload();
+$('joinForm').onsubmit = e => {
+  e.preventDefault();
+
+  const n = $('name').value.trim();
+  if (!n) return;
+
+  ws = new WebSocket(
+    (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host
+  );
+
+  ws.onopen = () => {
+    console.log('WEBSOCKET: CONNECTED');
+    ws.send(JSON.stringify({
+      type: 'join',
+      name: n
+    }));
+  };
+
+  ws.onerror = err => {
+    console.error('WEBSOCKET ERROR:', err);
+    alert('Serverə qoşulmaq mümkün olmadı.');
+  };
+
+  ws.onclose = () => {
+    console.log('WEBSOCKET: CLOSED');
+  };
+
+  ws.onmessage = e => {
+    const m = JSON.parse(e.data);
+    console.log('SERVER:', m);
+
+    if (m.type === 'joined') {
+      me = m.id;
+      state = m.state;
+
+      localStorage.setItem('nadirQuizName', n);
+
+      showState();
+    }
+
+    if (m.type === 'state') {
+      state = m.state;
+      showState();
+    }
+
+    if (m.type === 'answerAccepted') {
+      answered = true;
+      renderAnswer(m.choice, m.correct);
+    }
+
+    if (m.type === 'leaderboard') {
+      if (state) state.leaderboard = m.leaderboard;
+    }
+  };
+};
+
+$('name').value = localStorage.getItem('nadirQuizName') || '';
+
+$('again').onclick = () => location.reload();
