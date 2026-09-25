@@ -15,11 +15,22 @@ function send(o){if(ws?.readyState===1)ws.send(JSON.stringify(o))}
 function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));$(id).classList.add('active')}
 function showState(){
   if(!state)return;
-  if(state.phase==='lobby'){show('join');return}
-  if(state.phase==='final'){show('final');renderFinal();return}
-  show('quiz');renderQuestion();
-}
-function renderQuestion(){
+
+  if(state.phase==='lobby'){
+    if(me){
+      show('quiz');
+      $('progress').textContent='';
+      $('qnum').textContent='GÖZLƏYİN';
+      $('question').textContent='Aparıcının oyunu başlatması gözlənilir...';
+      $('options').innerHTML='';
+      $('feedback').textContent='';
+      $('timer').textContent='15';
+    } else {
+      show('join');
+    }
+    return;
+  }
+  function renderQuestion(){
   $('progress').textContent=`${state.qIndex+1} / ${state.total}`;
   $('qnum').textContent=`SUAL ${String(state.qIndex+1).padStart(2,'0')}`;
   $('question').textContent=state.question.text;
