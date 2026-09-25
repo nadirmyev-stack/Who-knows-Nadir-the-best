@@ -736,14 +736,16 @@ button:active{
 /* selected answer */
 
 .option.selected{
-  background:var(--red);
+  background:#e5d8c3;
 
-  border-color:var(--red-dark);
+  border-color:var(--gold);
 
-  color:#fff;
+  color:var(--ink);
 
   box-shadow:
-    0 4px 12px rgba(143,37,33,.25);
+    inset 5px 0 0 var(--gold);
+
+  transform:none;
 }
 
 
