@@ -1,39 +1,54 @@
-let ws, me = null, state = null, answered = false, tick = null;
+let ws = null;
+let me = null;
+let state = null;
+let answered = false;
+let tick = null;
 
 const $ = id => document.getElementById(id);
 
+
+/* =========================
+   WEBSOCKET
+========================= */
+
 function connect() {
   ws = new WebSocket(
-    (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host
+    (location.protocol === 'https:' ? 'wss://' : 'ws://') +
+    location.host
   );
 
-  ws.onopen = () => {};
+  ws.onopen = () => {
+    console.log('Connected');
+  };
 
   ws.onmessage = e => {
     const m = JSON.parse(e.data);
 
+    /* JOIN */
     if (m.type === 'joined') {
       me = m.id;
       state = m.state;
 
-      localStorage.setItem(
-        'nadirQuizName',
-        $('name').value.trim()
-      );
+      // Adı yadda saxlamırıq.
+      // Köhnə "Sabina" və s. avtomatik gəlməyəcək.
 
-      // Daxil olduqdan sonra admin / host səhifəsinə keç
-      window.location.href = '/host.html';
+      showState();
+      return;
     }
 
+    /* STATE */
     if (m.type === 'state') {
       state = m.state;
       showState();
+      return;
     }
 
+    /* ANSWER ACCEPTED */
     if (m.type === 'answerAccepted') {
       answered = true;
 
-      // Cavabın düzgün/səhv olması yalnız vaxt bitəndən sonra göstərilir
+      // Cavab qəbul edildi.
+      // Düzgün/səhv olduğunu HƏLƏ göstərmirik.
       [...$('options').children].forEach((b, i) => {
         b.disabled = true;
 
@@ -41,37 +56,80 @@ function connect() {
           b.classList.add('selected');
         }
       });
+
+      return;
     }
 
+    /* LEADERBOARD */
     if (m.type === 'leaderboard') {
       if (state) {
         state.leaderboard = m.leaderboard;
       }
     }
   };
+
+  ws.onclose = () => {
+    console.log('Disconnected');
+  };
 }
 
-function send(o) {
-  if (ws?.readyState === 1) {
-    ws.send(JSON.stringify(o));
+
+/* =========================
+   SEND
+========================= */
+
+function send(data) {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify(data));
   }
 }
+
+
+/* =========================
+   SCREEN
+========================= */
 
 function show(id) {
   document
     .querySelectorAll('.screen')
     .forEach(x => x.classList.remove('active'));
 
-  $(id).classList.add('active');
+  const screen = $(id);
+
+  if (screen) {
+    screen.classList.add('active');
+  }
 }
+
+
+/* =========================
+   STATE
+========================= */
 
 function showState() {
   if (!state) return;
 
+  /*
+    LOBBY:
+    İştirakçı artıq qoşulubsa,
+    onu WAITING səhifəsində saxlayırıq.
+  */
+
   if (state.phase === 'lobby') {
-    show('join');
+
+    if (me) {
+      show('waiting');
+    } else {
+      show('join');
+    }
+
     return;
   }
+
+
+  /*
+    FINAL
+  */
 
   if (state.phase === 'final') {
     show('final');
@@ -79,11 +137,24 @@ function showState() {
     return;
   }
 
+
+  /*
+    QUESTION / REVEAL
+  */
+
   show('quiz');
   renderQuestion();
 }
 
+
+/* =========================
+   QUESTION
+========================= */
+
 function renderQuestion() {
+
+  if (!state.question) return;
+
   $('progress').textContent =
     `${state.qIndex + 1} / ${state.total}`;
 
@@ -98,9 +169,16 @@ function renderQuestion() {
 
   $('options').innerHTML = '';
 
+  /*
+    Əgər artıq cavab verilibsə və ya reveal mərhələsidirsə,
+    düymələr deaktivdir.
+  */
+
   answered = state.phase !== 'question';
 
+
   state.question.options.forEach((opt, i) => {
+
     const b = document.createElement('button');
 
     b.className = 'option';
@@ -108,10 +186,16 @@ function renderQuestion() {
 
     b.disabled = state.phase !== 'question';
 
+
     b.onclick = () => {
+
       if (answered) return;
 
       answered = true;
+
+      /*
+        Cavab seçildikdən sonra bütün cavablar kilidlənir.
+      */
 
       [...$('options').children].forEach(x => {
         x.disabled = true;
@@ -119,21 +203,31 @@ function renderQuestion() {
 
       b.classList.add('selected');
 
+
       send({
         type: 'answer',
         choice: i
       });
     };
 
+
     $('options').appendChild(b);
   });
 
-  // Yalnız vaxt bitəndən sonra düzgün cavabı göstər
+
+  /*
+    Yalnız 15 saniyə bitdikdən sonra
+    düzgün cavabı göstəririk.
+  */
+
   if (state.phase === 'reveal') {
+
     [...$('options').children].forEach((b, i) => {
+
       if (i === state.revealCorrect) {
         b.classList.add('correct');
       }
+
     });
 
     $('feedback').textContent =
@@ -143,41 +237,62 @@ function renderQuestion() {
       'feedback correct';
   }
 
+
+  /* TIMER */
+
   clearInterval(tick);
 
   const start = state.questionStartedAt;
 
+
   function timer() {
+
     const left = Math.max(
       0,
       15 - (Date.now() - start) / 1000
     );
 
-    $('timer').textContent = Math.ceil(left);
+    $('timer').textContent =
+      Math.ceil(left);
 
     if (left <= 0) {
       clearInterval(tick);
     }
   }
 
+
   if (state.phase === 'question') {
+
     timer();
+
     tick = setInterval(timer, 100);
+
   } else {
+
     $('timer').textContent = '0';
   }
 }
 
+
+/* =========================
+   FINAL
+========================= */
+
 function renderFinal() {
-  const rows = [...(state.leaderboard || [])];
+
+  const rows = [
+    ...(state.leaderboard || [])
+  ];
 
   const top = rows[0];
+
 
   $('winner').innerHTML = top
     ? `
       <div class="winner-name">
         🏆 ${esc(top.name)}
       </div>
+
       <div class="winner-score">
         ${top.score}/${state.total} düzgün cavab
         · ${top.totalTime}s cavab vaxtı
@@ -185,23 +300,39 @@ function renderFinal() {
     `
     : '';
 
+
   $('board').innerHTML = rows
     .map((p, i) => `
       <div class="row">
-        <div class="rank">#${i + 1}</div>
-        <div>${esc(p.name)}</div>
+
+        <div class="rank">
+          #${i + 1}
+        </div>
+
+        <div>
+          ${esc(p.name)}
+        </div>
+
         <div class="score">
           ${p.score}/${state.total}
         </div>
+
         <div class="time">
           ${p.totalTime}s
         </div>
+
       </div>
     `)
     .join('');
 }
 
+
+/* =========================
+   HTML ESCAPE
+========================= */
+
 function esc(s) {
+
   return String(s).replace(
     /[&<>"']/g,
     c => ({
@@ -215,36 +346,59 @@ function esc(s) {
 }
 
 
-// ADINI YAZIB "QUIZƏ DAXİL OL" BASANDA
-// ƏVVƏLCƏ SERVERƏ JOIN GÖNDƏRİLİR,
-// SONRA AVTOMATİK HOST/ADMIN SƏHİFƏSİNƏ KEÇİLİR.
+/* =========================
+   JOIN
+========================= */
+
 $('joinForm').onsubmit = e => {
+
   e.preventDefault();
 
-  const n = $('name').value.trim();
+  const name = $('name').value.trim();
 
-  if (!n) return;
+  if (!name) return;
+
+
+  /*
+    İştirakçi serverə qoşulur.
+    ADMIN SƏHİFƏSİNƏ YÖNLƏNDİRMƏ YOXDUR.
+  */
 
   connect();
 
+
   const wait = setInterval(() => {
-    if (ws?.readyState === 1) {
+
+    if (ws && ws.readyState === WebSocket.OPEN) {
+
       clearInterval(wait);
 
       send({
         type: 'join',
-        name: n
+        name: name
       });
     }
+
   }, 100);
 };
 
 
-// SABİNA VƏ YA BAŞQA AD AVTOMATİK YAZILMASIN
+/*
+  Köhnə adı avtomatik gətirmirik.
+  Məsələn, "Sabina" artıq avtomatik yazılmayacaq.
+*/
+
 $('name').value = '';
 
 
-// YENİ OYUN
-$('again').onclick = () => {
-  location.reload();
-};
+/* =========================
+   AGAIN
+========================= */
+
+if ($('again')) {
+
+  $('again').onclick = () => {
+    location.reload();
+  };
+
+}
