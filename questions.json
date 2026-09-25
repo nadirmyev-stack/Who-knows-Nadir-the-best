@@ -9,7 +9,7 @@
     "correct": 1
   },
   {
-    "q": "Nadirin ilk maaşının nömrəsi nə olub?",
+    "q": "Nadirin ilk maşınının nömrəsi nə olub?",
     "options": [
       "90-NM-371",
       "99-NM-371",
@@ -18,7 +18,7 @@
     "correct": 1
   },
   {
-    "q": "Nadir qəbul imtahanında hansı səhvləri etmişdi?",
+    "q": "Nadir qəbul imtahanında hansı səhvləri etmişdir?",
     "options": [
       "1 səhv Azərbaycan dili, 1 səhv İngilis dili",
       "1 səhv Azərbaycan dili, 1 səhv Ədəbiyyat",
@@ -54,7 +54,7 @@
     "correct": 0
   },
   {
-    "q": "Nadir əsgərlikdə olanda hansı binanın söküntü işlərində iştirak edib?",
+    "q": "Nadir əsgərlikdə olarkən hansı binanın söküntü işlərində iştirak edib?",
     "options": [
       "Yeməkxana",
       "Donuz tövləsi",
@@ -72,7 +72,7 @@
     "correct": 1
   },
   {
-    "q": "ELSA vaxtı tədbirdə Nadir hansı durumda sinxron tərcümə etmişdi?",
+    "q": "ELSA vaxtı tədbirdə Nadir hansı qurumda ingilis dilinə sinxron tərcümə etmişdir?",
     "options": [
       "Milli Məclis",
       "Ali Məhkəmə",
