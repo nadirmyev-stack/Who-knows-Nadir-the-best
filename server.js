@@ -123,7 +123,7 @@ const server = http.createServer(async (req,res) => {
   }
   let file = url.pathname === '/' ? '/index.html' : url.pathname;
   const safe = path.normalize(file).replace(/^(\.\.[\/\\])+/, '');
-  const fp = path.join(__dirname, 'public', safe);
+  const fp = path.join(__dirname, safe);
   fs.readFile(fp, (err,data) => {
     if (err) { res.writeHead(404); return res.end('Not found'); }
     const ext = path.extname(fp);
