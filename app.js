@@ -288,8 +288,7 @@ document.getElementById('joinForm').addEventListener(
 );
 
 /* əvvəlki adı göstər */
-$('name').value =
-  localStorage.getItem('nadirQuizName') || '';
+$('name').value='';
 
 /* yeni oyun */
 $('again').onclick = () => {
