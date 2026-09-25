@@ -1,8 +1,4 @@
-let ws = null;
-let me = null;
-let state = null;
-let answered = false;
-let tick = null;
+let ws, me = null, state = null, answered = false, tick = null;
 
 const $ = id => document.getElementById(id);
 
@@ -11,9 +7,7 @@ function connect() {
     (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host
   );
 
-  ws.onopen = () => {
-    console.log('WebSocket connected');
-  };
+  ws.onopen = () => {};
 
   ws.onmessage = e => {
     const m = JSON.parse(e.data);
@@ -21,7 +15,14 @@ function connect() {
     if (m.type === 'joined') {
       me = m.id;
       state = m.state;
-      showState();
+
+      localStorage.setItem(
+        'nadirQuizName',
+        $('name').value.trim()
+      );
+
+      // Daxil olduqdan sonra admin / host səhifəsinə keç
+      window.location.href = '/host.html';
     }
 
     if (m.type === 'state') {
@@ -31,7 +32,15 @@ function connect() {
 
     if (m.type === 'answerAccepted') {
       answered = true;
-      renderAnswer(m.choice, m.correct);
+
+      // Cavabın düzgün/səhv olması yalnız vaxt bitəndən sonra göstərilir
+      [...$('options').children].forEach((b, i) => {
+        b.disabled = true;
+
+        if (i === m.choice) {
+          b.classList.add('selected');
+        }
+      });
     }
 
     if (m.type === 'leaderboard') {
@@ -40,18 +49,10 @@ function connect() {
       }
     }
   };
-
-  ws.onerror = error => {
-    console.error('WebSocket error:', error);
-  };
-
-  ws.onclose = () => {
-    console.log('WebSocket disconnected');
-  };
 }
 
 function send(o) {
-  if (ws && ws.readyState === WebSocket.OPEN) {
+  if (ws?.readyState === 1) {
     ws.send(JSON.stringify(o));
   }
 }
@@ -61,11 +62,7 @@ function show(id) {
     .querySelectorAll('.screen')
     .forEach(x => x.classList.remove('active'));
 
-  const element = $(id);
-
-  if (element) {
-    element.classList.add('active');
-  }
+  $(id).classList.add('active');
 }
 
 function showState() {
@@ -87,8 +84,6 @@ function showState() {
 }
 
 function renderQuestion() {
-  if (!state || !state.question) return;
-
   $('progress').textContent =
     `${state.qIndex + 1} / ${state.total}`;
 
@@ -118,9 +113,7 @@ function renderQuestion() {
 
       answered = true;
 
-      [
-        ...$('options').children
-      ].forEach(x => {
+      [...$('options').children].forEach(x => {
         x.disabled = true;
       });
 
@@ -135,21 +128,16 @@ function renderQuestion() {
     $('options').appendChild(b);
   });
 
-  /*
-    Düzgün cavab yalnız reveal mərhələsində,
-    yəni 15 saniyə bitdikdən sonra göstərilir.
-  */
+  // Yalnız vaxt bitəndən sonra düzgün cavabı göstər
   if (state.phase === 'reveal') {
-    [
-      ...$('options').children
-    ].forEach((b, i) => {
+    [...$('options').children].forEach((b, i) => {
       if (i === state.revealCorrect) {
         b.classList.add('correct');
       }
     });
 
     $('feedback').textContent =
-      'Düzgün cavab göstərilir.';
+      'Düzgün cavab yuxarıda göstərilib.';
 
     $('feedback').className =
       'feedback correct';
@@ -160,15 +148,12 @@ function renderQuestion() {
   const start = state.questionStartedAt;
 
   function timer() {
-    if (!start) return;
-
     const left = Math.max(
       0,
       15 - (Date.now() - start) / 1000
     );
 
-    $('timer').textContent =
-      Math.ceil(left);
+    $('timer').textContent = Math.ceil(left);
 
     if (left <= 0) {
       clearInterval(tick);
@@ -183,38 +168,8 @@ function renderQuestion() {
   }
 }
 
-function renderAnswer(choice, correct) {
-  /*
-    Burada cavabın düzgün/səhv olması
-    istifadəçiyə dərhal göstərilmir.
-
-    Server cavabı qəbul edir, amma nəticə yalnız
-    timer bitib phase === 'reveal' olduqda
-    renderQuestion() tərəfindən göstərilir.
-  */
-
-  [
-    ...$('options').children
-  ].forEach(b => {
-    b.disabled = true;
-
-    /*
-      Seçilmiş cavabın qırmızı və ya yaşıl
-      rəngə çevrilməsi burada edilmir.
-    */
-    if (i !== undefined) {
-      // heç nə
-    }
-  });
-
-  $('feedback').textContent = '';
-  $('feedback').className = 'feedback';
-}
-
 function renderFinal() {
-  const rows = [
-    ...(state.leaderboard || [])
-  ];
+  const rows = [...(state.leaderboard || [])];
 
   const top = rows[0];
 
@@ -224,8 +179,8 @@ function renderFinal() {
         🏆 ${esc(top.name)}
       </div>
       <div class="winner-score">
-        ${top.score}/${state.total} düzgün cavab ·
-        ${top.totalTime}s cavab vaxtı
+        ${top.score}/${state.total} düzgün cavab
+        · ${top.totalTime}s cavab vaxtı
       </div>
     `
     : '';
@@ -260,49 +215,20 @@ function esc(s) {
 }
 
 
-/* ================================
-   OYUNA DAXİL OLMA
-   ================================ */
-
+// ADINI YAZIB "QUIZƏ DAXİL OL" BASANDA
+// ƏVVƏLCƏ SERVERƏ JOIN GÖNDƏRİLİR,
+// SONRA AVTOMATİK HOST/ADMIN SƏHİFƏSİNƏ KEÇİLİR.
 $('joinForm').onsubmit = e => {
   e.preventDefault();
 
   const n = $('name').value.trim();
 
-  if (!n) {
-    $('name').focus();
-    return;
-  }
-
-  /*
-    Əgər əvvəlki WebSocket bağlantısı varsa,
-    yeni bağlantı yaratmadan istifadə edirik.
-  */
-  if (
-    ws &&
-    (
-      ws.readyState === WebSocket.OPEN ||
-      ws.readyState === WebSocket.CONNECTING
-    )
-  ) {
-    const wait = setInterval(() => {
-      if (ws.readyState === WebSocket.OPEN) {
-        clearInterval(wait);
-
-        send({
-          type: 'join',
-          name: n
-        });
-      }
-    }, 100);
-
-    return;
-  }
+  if (!n) return;
 
   connect();
 
   const wait = setInterval(() => {
-    if (ws && ws.readyState === WebSocket.OPEN) {
+    if (ws?.readyState === 1) {
       clearInterval(wait);
 
       send({
@@ -314,23 +240,11 @@ $('joinForm').onsubmit = e => {
 };
 
 
-/* ================================
-   AD XANASI
-   ================================ */
-
-/*
-  Burada artıq localStorage YOXDUR.
-
-  Buna görə sayt açıldıqda input həmişə boş olacaq.
-*/
-
+// SABİNA VƏ YA BAŞQA AD AVTOMATİK YAZILMASIN
 $('name').value = '';
 
 
-/* ================================
-   YENİ OYUN
-   ================================ */
-
+// YENİ OYUN
 $('again').onclick = () => {
   location.reload();
 };
