@@ -1117,3 +1117,266 @@ button:active{
     padding:16px 14px;
   }
 }
+
+/* =========================
+   WAITING SCREEN
+========================= */
+
+.waiting-card {
+  max-width: 900px;
+  min-height: 560px;
+
+  margin: 60px auto;
+
+  padding: 70px 60px;
+
+  background: var(--paper);
+
+  border: 2px solid #111;
+
+  box-shadow: 0 30px 90px #0008;
+
+  position: relative;
+
+  overflow: hidden;
+
+  text-align: center;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  align-items: center;
+}
+
+
+.waiting-card:before {
+
+  content: "";
+
+  position: absolute;
+
+  inset: 16px;
+
+  border: 2px solid #1b1b1b;
+
+  pointer-events: none;
+}
+
+
+.waiting-number {
+
+  font-family: Oswald, sans-serif;
+
+  font-size: 22px;
+
+  color: var(--red);
+
+  border: 3px solid var(--red);
+
+  padding: 7px 14px;
+
+  margin: 25px 0;
+
+  transform: rotate(5deg);
+}
+
+
+.waiting-card h1 {
+
+  font-family: Oswald, sans-serif;
+
+  font-size: clamp(55px, 8vw, 100px);
+
+  line-height: .88;
+
+  margin: 0 0 25px;
+
+  color: #171717;
+}
+
+
+.waiting-card h1 span {
+
+  color: var(--red);
+}
+
+
+.waiting-line {
+
+  width: 260px;
+
+  height: 4px;
+
+  background: #d7cdbb;
+
+  margin: 10px 0 25px;
+
+  position: relative;
+
+  overflow: hidden;
+}
+
+
+.waiting-line:after {
+
+  content: "";
+
+  position: absolute;
+
+  width: 80px;
+
+  height: 100%;
+
+  background: var(--red);
+
+  left: -80px;
+
+  animation: waitingLine 1.8s ease-in-out infinite;
+}
+
+
+.waiting-main {
+
+  font-family: Oswald, sans-serif;
+
+  text-transform: uppercase;
+
+  font-size: 25px;
+
+  margin: 5px 0 10px;
+
+  letter-spacing: .04em;
+}
+
+
+.waiting-sub {
+
+  font-size: 17px;
+
+  color: var(--muted);
+
+  margin: 0;
+}
+
+
+.waiting-loader {
+
+  display: flex;
+
+  gap: 8px;
+
+  margin: 30px 0 18px;
+}
+
+
+.waiting-loader span {
+
+  width: 10px;
+
+  height: 10px;
+
+  border-radius: 50%;
+
+  background: var(--red);
+
+  animation: waitingDots 1.2s infinite ease-in-out;
+}
+
+
+.waiting-loader span:nth-child(2) {
+
+  animation-delay: .15s;
+}
+
+
+.waiting-loader span:nth-child(3) {
+
+  animation-delay: .3s;
+}
+
+
+.waiting-status {
+
+  font-family: Oswald, sans-serif;
+
+  color: var(--red);
+
+  font-size: 14px;
+
+  letter-spacing: .16em;
+
+  font-weight: 600;
+}
+
+
+@keyframes waitingLine {
+
+  0% {
+    left: -80px;
+  }
+
+  50% {
+    left: 260px;
+  }
+
+  100% {
+    left: -80px;
+  }
+
+}
+
+
+@keyframes waitingDots {
+
+  0%, 80%, 100% {
+    transform: scale(.6);
+    opacity: .4;
+  }
+
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+}
+
+
+@media(max-width:800px) {
+
+  .waiting-card {
+
+    min-height: calc(100vh - 28px);
+
+    margin: 14px auto;
+
+    padding: 50px 25px;
+  }
+
+
+  .waiting-card:before {
+
+    inset: 10px;
+  }
+
+
+  .waiting-card h1 {
+
+    font-size: clamp(50px, 14vw, 80px);
+  }
+
+
+  .waiting-main {
+
+    font-size: 21px;
+  }
+
+
+  .waiting-sub {
+
+    font-size: 15px;
+  }
+
+}
