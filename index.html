@@ -1,22 +1,43 @@
 <!doctype html>
 <html lang="az">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Nadir Mehdiyev — Birthday Quiz</title>
-  <link rel="stylesheet" href="/style.css">
+
+<meta charset="utf-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+
+<title>
+  Nadir Mehdiyev — Birthday Quiz
+</title>
+
+<link
+  rel="stylesheet"
+  href="/style.css"
+>
+
 </head>
+
 
 <body>
 
 <div class="grain"></div>
 
+
 <main id="app">
 
+
   <!-- =========================
-       JOIN / START PAGE
+       JOIN
   ========================== -->
-  <section id="join" class="screen active">
+
+  <section
+    id="join"
+    class="screen active"
+  >
 
     <div class="poster">
 
@@ -26,25 +47,20 @@
           NADİR MEHDİYEV • BIRTHDAY QUIZ
         </div>
 
+
         <h1>
           Məni nə qədər<br>
           <span>yaxşı tanıyırsan?</span>
         </h1>
 
+
         <p>
-          10 sual · hər sual 15 saniyə · bir cavab haqqı
+          10 sual · hər sual 15 saniyə ·
+          bir cavab haqqı
         </p>
 
-        <form
-          id="joinForm"
-          style="
-            display:flex !important;
-            gap:10px !important;
-            margin-top:24px !important;
-            position:relative !important;
-            z-index:9999 !important;
-          "
-        >
+
+        <form id="joinForm">
 
           <input
             id="name"
@@ -53,39 +69,15 @@
             autocomplete="off"
             placeholder="Adını yaz"
             required
-            style="
-              display:block !important;
-              visibility:visible !important;
-              opacity:1 !important;
-              flex:1 !important;
-              height:58px !important;
-              padding:16px 18px !important;
-              border:2px solid #141414 !important;
-              background:white !important;
-              color:#141414 !important;
-              font-size:17px !important;
-            "
           >
 
-          <button
-            type="submit"
-            style="
-              display:block !important;
-              visibility:visible !important;
-              opacity:1 !important;
-              height:58px !important;
-              padding:16px 22px !important;
-              background:#b12b25 !important;
-              color:white !important;
-              border:0 !important;
-              font-weight:700 !important;
-              cursor:pointer !important;
-            "
-          >
+
+          <button type="submit">
             QUIZƏ DAXİL OL →
           </button>
 
         </form>
+
 
         <div class="fine">
           Cavab seçildikdən sonra dəyişdirilə bilməz.
@@ -111,7 +103,8 @@
         <div class="portrait-caption">
 
           <div class="portrait-title">
-            NADİR<br>MEHDİYEV
+            NADİR<br>
+            MEHDİYEV
           </div>
 
           <div class="portrait-sub">
@@ -127,10 +120,15 @@
   </section>
 
 
+
   <!-- =========================
-       WAITING ROOM
+       WAITING
   ========================== -->
-  <section id="waiting" class="screen">
+
+  <section
+    id="waiting"
+    class="screen"
+  >
 
     <div class="waiting-card">
 
@@ -138,30 +136,39 @@
         NADİR QUIZ • BIRTHDAY ARCHIVE
       </div>
 
+
       <div class="waiting-number">
         30
       </div>
+
 
       <h1>
         OYUN<br>
         <span>BAŞLAMAQ ÜZRƏDİR</span>
       </h1>
 
+
       <div class="waiting-line"></div>
+
 
       <p class="waiting-main">
         Sən oyuna qoşuldun.
       </p>
 
+
       <p class="waiting-sub">
         Aparıcının oyunu başlatmasını gözlə.
       </p>
 
+
       <div class="waiting-loader">
+
         <span></span>
         <span></span>
         <span></span>
+
       </div>
+
 
       <div class="waiting-status">
         HAZIRLIQ GEDİR...
@@ -172,10 +179,15 @@
   </section>
 
 
+
   <!-- =========================
        QUIZ
   ========================== -->
-  <section id="quiz" class="screen">
+
+  <section
+    id="quiz"
+    class="screen"
+  >
 
     <header class="topbar">
 
@@ -183,9 +195,11 @@
         NADİR <b>QUIZ</b>
       </div>
 
+
       <div id="progress">
         1 / 10
       </div>
+
 
       <div
         class="timer"
@@ -206,12 +220,15 @@
         SUAL 01
       </div>
 
+
       <h2 id="question"></h2>
+
 
       <div
         id="options"
         class="options"
       ></div>
+
 
       <div
         id="feedback"
@@ -223,10 +240,15 @@
   </section>
 
 
+
   <!-- =========================
        FINAL
   ========================== -->
-  <section id="final" class="screen">
+
+  <section
+    id="final"
+    class="screen"
+  >
 
     <div class="final-card">
 
@@ -234,17 +256,21 @@
         QUIZ TAMAMLANDI
       </div>
 
+
       <h1>
         Kim məni<br>
         <span>ən yaxşı tanıyır?</span>
       </h1>
 
+
       <div id="winner"></div>
+
 
       <div
         id="board"
         class="board"
       ></div>
+
 
       <button id="again">
         YENİ OYUN
@@ -254,11 +280,12 @@
 
   </section>
 
+
 </main>
 
 
-<!-- VACİB: burada yalnız bir < işarəsi olmalıdır -->
-<script src="/app.js?v=3"></script>
+<script src="/app.js?v=4"></script>
 
 </body>
+
 </html>
